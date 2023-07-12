@@ -1,0 +1,40 @@
+Find all the information about each products
+  db.Products.find();
+
+Find the product price which are between 400 to 800
+  db.Products.find({product_price:{$gte:400,$lte:800}});
+
+Find the product price which are not between 400 to 600
+  db.Products.find({product_price:{$not:{$gte:400,$lte:600}}});
+
+List the four product which are grater than 500 in price 
+  db.Products.find({product_price:{$gte:500}}).limit(4);
+
+Find the product name and product material of each products
+  db.Products.find().forEach(function(prod){print("product_name:",prod.product_name,"product_material:",prod.product_material)});
+
+Find the product with a row id of 10
+  db.Products.findOne({id:"10"});
+
+Find only the product name and product material
+  db.Products.find().forEach(function(prod){print("product_name:",prod.product_name,"product_material:",prod.product_material)});
+
+Find all products which contain the value of soft in product material 
+  db.Products.find({product_material:"Soft"});
+
+Find products which contain product color indigo  and product price 492.00
+  db.Products.find({$and:[{product_color:"indigo"},{product_price:"492.00"}]});
+
+Delete the products which product price value are same
+  db.Products.aggregate([{
+    $group:{
+        _id:"$product_price",
+         duplicate:{$addToSet:"$_id"},
+         totalCount:{$sum:1}
+         }
+  },
+  {$match:{totalCount:{$gt:1}}}
+  ]).forEach((doc)=>{
+    doc.duplicate.shift();
+    db.Products.deleteMany({_id:{$in:doc.duplicate}})
+  })
